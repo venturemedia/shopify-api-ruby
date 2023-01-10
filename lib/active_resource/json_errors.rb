@@ -13,6 +13,8 @@ module ActiveResource
       case data
       when String
         from_string(data, save_cache)
+      when Array
+        from_array(data, save_cache)
       else
         from_hash(data, save_cache)
       end
@@ -28,10 +30,22 @@ module ActiveResource
       end
     end
 
+    def from_array(errors, save_cache = false)
+      clear unless save_cache
+
+      raise ActiveResource::ResourceInvalid.new(response_struct(errors))
+    end
+
     def from_string(error, save_cache = false)
       clear unless save_cache
 
       add(:base, error)
+    end
+
+    private
+
+    def response_struct(errors)
+      Struct.new(:message, :code).new(errors.join(', '), 422)
     end
   end
 end
